@@ -55,7 +55,14 @@ class LotteryApp {
 
     startLottery() {
         this.participants = [
-            '喝！', '必须喝！', '肯定喝啊！', '要不小喝一个？'
+            {text: '喝！', value: 1}, 
+            {text: '必须喝！', value: 1}, 
+            {text: '肯定喝啊！', value: 1}, 
+            {text: '要不小喝一个？', value: 1},
+            {text: '今天戒酒！', value: 0}, 
+            {text: '喝不了一点！', value: 0}, 
+            {text: '不喝！', value: 0}, 
+            {text: '真喝不了！', value: 0}
         ];
         this.updateParticipants();
 
@@ -67,7 +74,7 @@ class LotteryApp {
         // 开始滚动显示名字
         this.currentInterval = setInterval(() => {
             const randomIndex = Math.floor(Math.random() * this.participants.length);
-            this.currentName.textContent = this.participants[randomIndex];
+            this.currentName.textContent = this.participants[randomIndex].text;
         }, this.speed);
     }
 
@@ -87,31 +94,39 @@ class LotteryApp {
 
         // 最终选择一个获奖者
         const winnerIndex = Math.floor(Math.random() * this.participants.length);
-        const winner = this.participants[winnerIndex];
+        const winner = this.participants[winnerIndex].text;
+        const isDrink = this.participants[winnerIndex].value;
         
         // 显示获奖者
-        //this.showWinner(winner);
+        this.currentName.textContent = winner;
         
         // 播放庆祝动画
-        this.celebrateWinner();
+        this.celebrateWinner(isDrink);
     }
 
-    celebrateWinner() {
+    celebrateWinner(isDrink) {
+
         // 创建彩带效果
-        this.createConfetti();
+        if(isDrink===1){
+            this.createConfetti();
+        }
         
         // 创建🍻动画
-        this.createBeerAnimation();
+        this.createBeerAnimation(isDrink);
         
-        // 播放音效（如果需要的话）
-        this.playSound();
+        
     }
 
-    createBeerAnimation() {
+    createBeerAnimation(isDrink) {
+        
         // 创建中心大🍻动画
         const centerBeer = document.createElement('div');
         centerBeer.className = 'beer-animation';
-        centerBeer.textContent = '🍻';
+        if(isDrink===1){
+            centerBeer.textContent = '🍻';
+        }else{
+            centerBeer.textContent = '🫵';
+        }
         centerBeer.style.left = '50%';
         centerBeer.style.top = '50%';
         centerBeer.style.transform = 'translate(-50%, -50%)';
@@ -126,24 +141,26 @@ class LotteryApp {
         }, 2000);
         
         // 创建多个飘浮的🍻
-        for (let i = 0; i < 8; i++) {
-            setTimeout(() => {
-                const floatBeer = document.createElement('div');
-                floatBeer.className = 'beer-float';
-                floatBeer.textContent = '🍻';
-                floatBeer.style.left = Math.random() * 100 + 'vw';
-                floatBeer.style.top = '100vh';
-                floatBeer.style.animationDelay = Math.random() * 1 + 's';
-                
-                document.body.appendChild(floatBeer);
-                
-                // 3秒后移除飘浮🍻
+        if(isDrink===1){
+            for (let i = 0; i < 8; i++) {
                 setTimeout(() => {
-                    if (floatBeer.parentNode) {
-                        floatBeer.parentNode.removeChild(floatBeer);
-                    }
-                }, 3000);
-            }, i * 200);
+                    const floatBeer = document.createElement('div');
+                    floatBeer.className = 'beer-float';
+                    floatBeer.textContent = '🍻';
+                    floatBeer.style.left = Math.random() * 100 + 'vw';
+                    floatBeer.style.top = '100vh';
+                    floatBeer.style.animationDelay = Math.random() * 1 + 's';
+                    
+                    document.body.appendChild(floatBeer);
+                    
+                    // 3秒后移除飘浮🍻
+                    setTimeout(() => {
+                        if (floatBeer.parentNode) {
+                            floatBeer.parentNode.removeChild(floatBeer);
+                        }
+                    }, 3000);
+                }, i * 200);
+            }
         }
     }
 
@@ -167,31 +184,6 @@ class LotteryApp {
                     }
                 }, 3000);
             }, i * 50);
-        }
-    }
-
-    playSound() {
-        // 创建简单的音效
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-            oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
-            oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
-            
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.5);
-        } catch (e) {
-            // 如果音频API不可用，静默失败
-            console.log('音频播放不可用');
         }
     }
 
